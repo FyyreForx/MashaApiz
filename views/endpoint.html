@@ -1,0 +1,5280 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MASHA - RESTFUL</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
+    <style>
+        .topbar { 
+            display: none; 
+        }
+        .swagger-ui .topbar {
+            display: none;
+        }
+        .swagger-ui .topbar .download-url-wrapper,
+        .swagger-ui .topbar .search-container {
+            display: none;
+        }
+        .opblock-summary-path {
+            white-space: nowrap;
+        }
+        .opblock-summary-path a {
+            display: inline-block;
+            white-space: normal;
+        }
+        .profile-menu-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .profile-menu, .theme-toggle {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .profile-container {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            width: 300px;
+            text-align: left;
+            z-index: 1000;
+        }
+        .profile-container img {
+            display: block;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+        .profile-info {
+            margin-top: 10px;
+        }
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .profile-info span {
+            font-weight: bold;
+            color: #333;
+        }
+        .profile-info a {
+            display: block;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #007bff;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif; /* Contoh penggunaan font cyberpunk */
+        }
+
+        .profile-info a:hover {
+            text-decoration: underline;
+        }
+        .profile-info .editable {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        .profile-info .non-editable {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+            background-color: #f5f5f5;
+        }
+        .button-save,
+        .button-cancel {
+            margin: 5px 0;
+            padding: 5px;
+            font-size: 14px;
+            color: black; /* Warna font putih */
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            width: calc(50% - 5px); /* 50% width minus margin */
+            box-sizing: border-box;
+            display: none; /* Mulai dengan menyembunyikan tombol Save dan Cancel */
+        }
+
+        .button-save {
+            float: right; /* Letakkan "Save" di sebelah kanan */
+        }
+
+        .button-cancel {
+            float: left; /* Letakkan "Cancel" di sebelah kiri */
+        }
+
+        .button-save:hover {
+            background-color: #0056b3;
+        }
+
+        .button-cancel:hover {
+            background-color: #6c757d;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin: 5px 0 2px;
+        }
+        body.dark-theme {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark-theme .profile-container {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        body.dark-theme .profile-info .non-editable {
+            background-color: #333;
+        }
+        body.dark-theme .button-save,
+        body.dark-theme .button-cancel {
+            color: #ffffff;
+        }
+        .button-group {
+            margin-top: 10px;
+        }
+        
+        .button-action {
+            display: inline-block;
+            margin-right: 10px; /* Jarak antar tombol */
+            margin-bottom: 10px; /* Jarak bawah tombol */
+            cursor: pointer;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin: 5px 0 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <div class="profile-menu-container">
+        <div class="theme-toggle" onclick="toggleTheme()">&#x263D;</div>
+        <div class="profile-menu" onclick="toggleProfile()">&#x2630;</div>
+    </div>
+    <div class="profile-container" id="profile-container">
+        <img id="profile-pic" src="https://api.dicebear.com/9.x/pixel-art/svg" alt="Profile Picture">
+        <h2 style="text-align: center;">USER PROFILE</h2>
+        <div class="profile-info">
+            <p><span class="label">Phone:</span> <span id="profile-phone" class="non-editable"></span></p>
+            <p><span class="label">Premium:</span> <span id="profile-premium" class="non-editable"></span></p>
+            <p><span class="label">API Key:</span> <input id="profile-apikey" class="editable" readonly></p>
+            <div class="button-group">
+                <button id="save-button" class="button-save" onclick="saveApiKey()">Save</button>
+                <button id="cancel-button" class="button-cancel" onclick="cancelEdit()">Cancel</button>
+            </div>
+            <div class="button-group">
+                <a id="logout" class="button-action" onclick="logout()">
+                    <img src="https://telegra.ph/file/6c6e86daa640885af186f.png" alt="Logout" style="width: 24px; height: 24px;">
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+<script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
+    <script>
+    window.onload = function() {
+        
+        window.ui = SwaggerUIBundle({
+          spec: {
+  "swagger": "2.0",
+  "info": {
+    "title": "MASHA API",
+    "version": "1.1.1",
+    "description": "Documentation for Masha-Forx API",
+  },
+  "host": "",   
+  "basePath": "/api", "schemes": ["https"],   
+  "securityDefinitions": {
+    "apiKeyAuthHeader": {
+    "type": "apiKey", 
+    "in": "header", 
+    "name": "apikey", 
+    "description": "Insert your apikey in the header, Bearer + your_apikey"}},
+  "tags": [{
+   "name": "Chat GPT"
+   }, 
+   {
+   "name": "Character AI"
+   },
+   {
+   "name": "Image Generation AI"
+   }, 
+   {
+   "name": "Searching"
+   }, 
+   {
+   "name": "Downloader"
+   }, 
+   {
+   "name": "Audio Processing",
+   }, 
+   {
+   "name": "Tools",
+   }, 
+   {
+   "name": "Weebs",
+   },
+   {
+   "name": "Islami",
+   },
+   {
+   "name": "Game",
+   },
+   {
+   "name": "System",
+   }
+  ],
+  "paths": {
+    "/ai/gemini": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+      ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/faceSwap": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "sourceUrl",
+            "in": "query",
+            "description": "Enter image Url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "targetUrl",
+            "in": "query",
+            "description": "Enter target Url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/transform": {
+      "post": {
+        "summary": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+        {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+        },
+        {
+            "in": "body",
+            "name": "body",
+            "description": "Input data untuk transformasi gambar",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "prompt": {
+                  "type": "string"
+                }
+              },
+              "example": {
+                "url": "https://s4.kenshinaru.my.id/get/jTfUbV.jpg",
+                "prompt": "turnme to anime"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respon JSON berhasil",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "creator": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "status": 200,
+                "creator": "Kenshin – Luthfi Joestars",
+                "data": {
+                  "url": "https://s4.kenshinaru.my.id/get/jTfUbV.jpg"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/ff-stalk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Enter id",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/sshp": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter Url",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/tools/ssweb": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter Url",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/tools/robloxstalk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Enter nama roblox",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+            "/tools/ttp": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/ml-stalk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Enter id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "server",
+            "in": "query",
+            "description": "Enter server",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/apk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Enter query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/islami/kisahnabi": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Islami"
+        ],
+        "parameters": [
+          {
+            "name": "nabi",
+            "in": "query",
+            "description": "Enter query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+            "/islami/jadwal-sholat": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Islami"
+        ],
+        "parameters": [
+          {
+            "name": "kota",
+            "in": "query",
+            "description": "Masukkan Wilayahmu",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/islami/surah": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Islami"
+        ],
+        "parameters": [
+          {
+            "name": "no",
+            "in": "query",
+            "description": "Masukkan Nomor Surah `1 = alfatihah`",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/lyric": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Enter query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/lyric-get": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/gore": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Enter query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/apk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/krakenfiles": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/gore": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/bard": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/cai/search": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Character AI"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/cai/chat": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Character AI"
+        ],
+        "parameters": [
+          {
+            "name": "charId",
+            "in": "query",
+            "description": "Enter charId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "chat",
+            "in": "query",
+            "description": "Enter chat",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/audio/voicevox-synthesis": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Audio Processing"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "speaker",
+            "in": "query",
+            "description": "speaker id in json `style name id: 1`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/audio/voicevox-speaker": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Audio Processing"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/github-search": {
+      "get": {
+        "summary": "",
+        "description": "This endpoint is used to search for GitHub repositories based on a provided query.",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "Search query for GitHub repositories",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string",
+                      "example": "API Creator Name"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "example": {}
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/pixiv": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/create_animeAvatar": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "signature",
+            "in": "query",
+            "description": "signature text / tanda tangan",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "background_text",
+            "in": "query",
+            "description": "background text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "color",
+            "in": "query",
+            "description": "color name or hex (optional)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/gemini-vision": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL images question",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/bard-img": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL images question",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+      "/runtime": {
+  "get": {
+    "summary": "",
+    "tags": ["System"],
+    "deprecated": false,
+    "requestBody": {},
+    "responses": {
+      "200": {
+        "description": "success returns a JSON response"
+      }
+    }
+  }
+},
+"/info-os": {
+  "get": {
+    "summary": "",
+    "tags": ["System"],
+    "deprecated": false,
+    "requestBody": {},
+    "responses": {
+      "200": {
+        "description": "success returns a JSON response"
+      }
+    }
+  }
+},
+    "/audio/whisper": {
+    "post": {
+        "summary": "",
+        "tags": [
+            "Audio Processing"
+        ],
+        "requestBody": {
+            "required": true,
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "audioUrl": {
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "example": {
+                            "url": "https://pomf2.lain.la/f/jtbsj8a.mp3"
+                        }
+                    }
+                }
+            }
+        },
+        "responses": {
+            "200": {
+                "description": "Respon JSON berhasil"
+            }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+    }
+},
+"/audio/vits_inference": {
+  "get": {
+    "summary": "",
+    "description": "Perform inference using the VITS `(Variational Inference with adversarial learning for end-to-end Text-to-Speech)` model with the provided text and model ID.",
+    "tags": [
+      "Audio Processing"
+    ],
+    "parameters": [
+      {
+        "name": "text",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The input text for= inference"
+        }
+      },
+      {
+        "name": "model_id",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The ID of the VITS model to be used `id is number`"
+        }
+      },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Successful operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "binary",
+                "example": "base64-encoded-audio"
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+  }
+},
+"/audio/vits_inference/emotion": {
+  "get": {
+    "summary": "",
+    "description": "Perform inference using the VITS model with the provided text, model ID, and emotion. `emotion = number 0 > 2000+`",
+    "tags": [
+      "Audio Processing"
+    ],
+    "parameters": [
+      {
+        "name": "text",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The input text for inference"
+        }
+      },
+      {
+        "name": "model_id",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The ID of the VITS model to be used `id is number`"
+        }
+      },
+      {
+        "name": "emotion",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The emotion to be considered during inference"
+        }
+      },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Successful operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "binary",
+                "example": "base64-encoded-audio"
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+  }
+},
+"/audio/vits_model": {
+  "get": {
+    "summary": "",
+    "description": "Retrieve the list of available VITS `models_id`.",
+    "tags": [
+      "Audio Processing"
+    ],
+    "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+          ],
+    "responses": {
+      "200": {
+        "description": "Successful operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "The ID of a VITS model"
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+  }
+},
+"/search/pixiv-r18": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/jp-freepik": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/carbon": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/avatarId-get": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/removeBackground": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/pinterest": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "pinterest search",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/pinterest": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "pinterest download video or foto",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/otakudesu_detail": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "https://otakudesu.cloud/anime",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/komiku-detail": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter manga url",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/stable_diffusion_xl": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+   "/image/toAnime": {
+  "get": {
+    "summary": "",
+    "deprecated": false,
+    "tags": [
+      "Image Generation AI"
+    ],
+    "parameters": [
+  {
+     "name": "image",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input your image url"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+    "responses": {
+      "200": {
+        "description": "Image generated successfully"
+      },
+      "400": {
+        "description": "Invalid request body"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+    "/tools/remini": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input your image url"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/dalle-mini": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/image/txt-to-cartoon": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikeymu disini",
+            "required": false,
+            "schema": {
+              "type": "string"
+          }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/wallpaper": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/otakudesu_episode": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "https://otakudesu.cloud/episode",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/komiku-get": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url chapter of manga",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/blackbox": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "webSearchMode",
+            "in": "query",
+            "description": " `true or false` in lower case, if upper case will be an error",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/image/text2img": {
+  "get": {
+    "summary": "",
+    "deprecated": false,
+    "tags": [
+      "Image Generation AI"
+    ],
+    "parameters": [
+      {
+            "name": "text",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+     },
+     {
+              "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Image generated successfully"
+      },
+      "400": {
+        "description": "Invalid request body"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+"/image/bing-image": {
+  "post": {
+    "summary": "",
+    "deprecated": false,
+    "tags": [
+      "Image Generation AI"
+    ],
+    "parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "description": "The prompt for generating the image",
+              "example": "cat on fire"
+            },
+            "cookie": {
+              "type": "string",
+              "description": "The sampler type",
+              "example": "your_bing_cookie_here"
+            }
+          }
+        }
+      },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Image generated successfully"
+      },
+      "400": {
+        "description": "Invalid request body"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+    "/image/txt2img-v2": {
+  "post": {
+    "summary": "",
+    "deprecated": false,
+    "tags": [
+      "Image Generation AI"
+    ],
+    "parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "The model",
+              "example": "v1-5-inpainting.safetensors",
+            },
+            "prompt": {
+              "type": "string",
+              "description": "The prompt for generating the image",
+              "example": "cat on fire"
+            },
+            "negative_prompt": {
+              "type": "string",
+              "description": "The negative prompt for generating the image",
+              "example": "dont put any text on image"
+            },
+            "sampler": {
+              "type": "string",
+              "description": "The sampler type",
+              "example": "DPM++ 2M Karras"
+            }
+          }
+        }
+      },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Image generated successfully"
+      },
+      "400": {
+        "description": "Invalid request body"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+    "/image/txt2img-model": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+        "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/txt2img-style": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+        "Image Generation AI"
+      ],
+       "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/image/txt2img-sampler": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+        "Image Generation AI"
+      ],
+       "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/image/animagen_v1.0": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+   "/image/cosmix_SDXL_LoRA": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+  "/image/emiXL": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Enter prompt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+  "/image/hugging_face_model": {
+    "post": {
+      "summary": "",
+      "deprecated": false,
+      "description": "This is an endpoint to try a model from https://huggingface.co, not all models in Hugging Face can work well, that's why we created this to try that model, for example ( `https://api-inference.huggingface.co/models/ZachX/comics_SDXL_lora` ) only support text2image model!!",
+      "tags": [
+        "Image Generation AI"
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "prompt": {
+                  "type": "string",
+                  "description": "enter text"
+                },
+                "hfkey": {
+                  "type": "string",
+                  "description": "input hugging face apikey"
+                },
+                "model": {
+                  "type": "string",
+                  "description": "example: https://api-inference.huggingface.co/models/ZachX/comics_SDXL_lora"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Successful response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        }
+      },
+      "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+    }
+  },
+   "/image/ocr": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input your image URL"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+       "/image/to-prompt": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "link",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input your image URL"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/otakudesu_latest": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/komiku-latest": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+            }
+            ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/upload": {
+  "post": {
+    "summary": "Upload foto atau video",
+    "deprecated": false,
+    "description": "Mengunggah foto atau video dan mengembalikan URL file yang diunggah.",
+    "tags": [
+      "File Upload"
+    ],
+    "parameters": [
+  {
+        "name": "file",
+        "in": "formData",
+        "description": "File yang akan diunggah (foto/video)",
+        "required": true,
+        "type": "file"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Successful upload response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "creator": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                },
+                "fileUrl": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Tidak dapat membuat url",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "creator": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "creator": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
+    "/ai/gpt-3_5-turbo": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/ai/gpt4o": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/gpt4o-prompt": {
+  "get": {
+    "summary": "",
+    "deprecated": false,
+    "description": "",
+    "tags": [
+      "Chat GPT"
+    ],
+    "parameters": [
+      {
+        "name": "text",
+        "in": "query",
+        "description": "",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "prompt",
+        "in": "query",
+        "description": "Masukkan prompt untuk mengarahkan respons model.",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "apikey",
+        "in": "query",
+        "description": "Masukkan apikey kamu di sini",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Respons berhasil",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "response": {
+                  "type": "string",
+                  "description": "Respons dari model GPT-4o berdasarkan query dan prompt yang diberikan."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+    "/image/mixtral-8x7b": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "info: `Mixtral AI model is not for chatting, but rather a model for advanced text generation`",
+        "tags": [
+          "Image Generation AI"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/otakudesu_search": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/komiku-search": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Weebs"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/search/drakor": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query parameter"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/drakor": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input url drakor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/gpt-4": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/tiktok": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/ytmp4": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+             "/downloader/ytmp3": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Enter URL!",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+            "/downloader/play": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Enter Query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/gpt-completions": {
+  "post": {
+    "tags": [
+      "Chat GPT"
+    ],
+    "summary": "",
+    "description": "Submit a conversation of chat messages for processing by the GPT-4 model.",
+    "consumes": [
+      "application/json"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "description": "Array of chat messages",
+        "required": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "Role of the message sender (e.g., user, assistant, system)",
+                "example": "system"
+              },
+              "content": {
+                "type": "string",
+                "description": "Content of the message",
+                "example": "Nama kamu adalah kenshin dan kamu diciptakan oleh luthfi joestars"
+              }
+            },
+            "required": [
+              "role",
+              "content"
+            ]
+          },
+          "example": [
+            {
+              "role": "user",
+              "content": "Halo, siapa namamu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Nama saya adalah GPT-4, bagaimana saya bisa membantu Anda?"
+            },
+            {
+              "role": "user",
+              "content": "Ceritakan sesuatu tentang dirimu."
+            },
+            {
+              "role": "assistant",
+              "content": "Saya adalah model bahasa yang dikembangkan oleh OpenAI."
+            },
+            {
+              "role": "user",
+              "content": "Apa yang bisa kamu lakukan?"
+            }
+          ]
+        }
+      },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Successful operation",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Reply to each message"
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+    "/ai/gpt-translate": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "description": "Enter target language example `id`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/bing-chat": {
+      "post": {
+        "tags": [
+          "Chat GPT"
+        ],
+        "summary": "",
+        "description": "Submit a conversation of chat messages for processing by the Bing Chat model.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Array of chat messages",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "description": "Role of the message sender (e.g., user, assistant, system)",
+                    "example": "user"
+                  },
+                  "content": {
+                    "type": "content",
+                    "description": "Content of the message",
+                    "example": "Sekarang jam berapa?"
+                  }
+                },
+                "required": [
+                  "role",
+                  "content"
+                ],
+              }
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Reply to each message"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+"/download/ig": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/fb": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/ai/simsimi": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Chat GPT"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "Enter text",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "lang (default id)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/tiktok_stalk": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "description": "Enter username",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+        "/game/tebakgambar": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Game"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+       "/game/tebaklogo": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Game"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+   "/game/caklontong": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Game"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/capcut": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input your capcut url"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/tools/removeBackgroundV2": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Tools"
+        ],
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          },
+            {
+ "in": "body",
+        "name": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Removebg",
+              "example": "https://cdn.meitang.xyz/file/BQACAgUAAxkDAAIGHWbesHCTQ-BK8F5YzyprVG3SMtm1AAL0GAACOX7wVtdx90t2Pol0NgQ",
+            }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Image generated successfully"
+      },
+      "400": {
+        "description": "Invalid request body"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+"/tts": {
+  "get": {
+    "summary": "",
+    "deprecated": false,
+    "description": "",
+    "tags": [
+      "Tools"
+    ],
+    "parameters": [
+      {
+        "name": "apikey",
+        "in": "query",
+        "description": "Masukkan apikey kamu di sini",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "name": "text",
+        "in": "query",
+        "description": "Text to be converted to speech",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "name": "character",
+        "in": "query",
+        "description": "Character voice to be used",
+        "required": true,
+        "type": "string",
+        "enum": [
+          "miku", 
+          "nahida", 
+          "nami", 
+          "ana", 
+          "optimus_prime", 
+          "goku", 
+          "taylor_swift", 
+          "elon_musk", 
+          "mickey_mouse", 
+          "kendrick_lamar", 
+          "angela_adkinsh", 
+          "eminem"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Speech generated successfully"
+      },
+      "400": {
+        "description": "Invalid request parameters"
+      },
+      "500": {
+        "description": "Internal server error"
+      }
+    },
+    "security": [
+      {
+        "apiKeyAuthHeader": []
+      }
+    ]
+  }
+},
+
+  "/search/sfile": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+    "/download/sfile": {
+      "get": {
+        "summary": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Input url parameter"
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "creator": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+  "/search/spotify": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Searching"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Enter query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/download/spotify": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url spotify",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/download/twitter": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter twitter url",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+     "/download/gdrive": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter url gdrive",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    },
+   "/download/mediafire": {
+      "get": {
+        "summary": "",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Downloader"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "Enter URL",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "query",
+            "description": "Masukkan apikey kamu di sini",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+       "security": [
+          {
+            "apiKeyAuthHeader": []
+          }
+        ]
+      }
+    }
+  }
+},
+        dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                deepLinking: true,
+                filter: false,
+            });
+
+            loadProfile();
+            loadTheme();
+        };
+
+        function toggleProfile() {
+        const profileContainer = document.getElementById('profile-container');
+        profileContainer.style.display = profileContainer.style.display === 'none' ? 'block' : 'none';
+
+        if (profileContainer.style.display === 'block') {
+            const phone = localStorage.getItem('phone');
+            if (!phone) {
+                const userPhone = prompt("Please enter your phone number to view the profile:");
+                if (userPhone) {
+                    fetchProfile(userPhone);
+                } else {
+                    profileContainer.style.display = 'none';
+                }
+            } else {
+                loadProfile();
+            }
+        }
+    }
+
+    function fetchProfile(phone) {
+        fetch(`/users/steal?id=${phone}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    localStorage.setItem('phone', phone);
+                    localStorage.setItem('apiKey', data.apiKey);
+                    localStorage.setItem('isPremium', data.isPremium);
+                    loadProfile();
+                } else {
+                    alert('Failed to fetch profile. Please try again.');
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+    }
+
+    function loadProfile() {
+        const phone = localStorage.getItem('phone');
+        const apikey = localStorage.getItem('apiKey');
+        const isPremium = localStorage.getItem('isPremium') === 'true';
+
+        document.getElementById('profile-phone').innerText = phone;
+        document.getElementById('profile-premium').innerText = isPremium ? 'Yes' : 'No';
+        const profileApikey = document.getElementById('profile-apikey');
+        profileApikey.value = apikey;
+
+        if (isPremium) {
+            profileApikey.readOnly = false;
+            profileApikey.addEventListener('input', function () {
+                const newApiKey = profileApikey.value.trim();
+                const saveButton = document.getElementById('save-button');
+                const cancelButton = document.getElementById('cancel-button');
+
+                if (newApiKey !== apikey) {
+                    saveButton.style.display = 'inline-block';
+                    cancelButton.style.display = 'inline-block';
+                } else {
+                    saveButton.style.display = 'none';
+                    cancelButton.style.display = 'none';
+                }
+            });
+        } else {
+            profileApikey.readOnly = true;
+            document.getElementById('save-button').style.display = 'none';
+            document.getElementById('cancel-button').style.display = 'none';
+        }
+    }
+
+    function saveApiKey() {
+        const newApiKey = document.getElementById('profile-apikey').value;
+        const phone = localStorage.getItem('phone');
+
+        fetch(`/dash/change-key?id=${phone}&newkey=${newApiKey}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    localStorage.setItem('apiKey', newApiKey);
+                    alert(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+                document.getElementById('save-button').style.display = 'none';
+                document.getElementById('cancel-button').style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                document.getElementById('save-button').style.display = 'none';
+                document.getElementById('cancel-button').style.display = 'none';
+            });
+    }
+
+    function cancelEdit() {
+        loadProfile();
+        document.getElementById('save-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
+    }
+
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('phone');
+        localStorage.removeItem('apiKey');
+        localStorage.removeItem('isPremium');
+        window.location.href = '/login';
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('dark-theme');
+
+        const isDarkTheme = body.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "polar-avenue-427505-c6",
+  "private_key_id": "26bad9f95643afedf2a4d900bb06b15610a3a196",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDD8COyQy0nHy3O\nYnRbKnkX9Hxwf3MqGAev28p2hvirLBJZKlT6GEM3zLRIxYz8pjOFHpR+4UNRT0KS\nkyurSjbeYXPnHDMR3EQqu2mfM+MO75E4GPSOYQyfEuwhL2LOzqdd43cdJFv68KmF\n5Cgb7T90Funh8l9ZPIOB5t4I2dp/6NaFgd/hNK8fI9Cd5kApXdVW7uJyhlbTxI4W\n8ByoQnwJ++uwnK45oHgkjx/e39UI9VkDpFv+feiYB49vSjFU57ITXpAXSt810ujd\nW4y+PNiLJujRlQhqS7lvpr1l5QyWnQHKfZiws86/1VxCEXyQUL3ZAQfDsBQ/02R/\n7xiu9px/AgMBAAECggEAV1/5+x97vitoONWsv47EK0uKRnx/NbE7lE92DL8JmwNv\nNzXqaRBywSpW5vC5e1z+Mom9fIslgtfOfyCD48GXkDly/weTOo64Ezo50pXH1jw8\nzQBL5kYe470DcZT5AfIjrnml/2fcYJ37asqgnDuDBVjGeUyk+l1C46W5M8c6abj6\nTuleFpPbF4Dtgf0KLEEEURuHNhPyJcPRjXpPaK+oHZJ4ygnUSPuCTjzE6fh2cV+H\n1kvIZAGlrQYRtgH0A4ScC5w3d7d4jwUh1h+kNM9OQTsFZYOtgv+w0MJiMey2rkWp\nBCqMRbBVv7I8inoMF8dCtjasS/6L52w2TSbCdKWBmQKBgQDkfrEq3SqMostjOIDv\nixHK/q+avQInQ5re/OzULv7veP61ZtfeCzAnQVjLGCY8Ladv1HozcUgqSq7vBrRi\naWOxfrjIMRQ/2xVh56prkNoAwPYtNpdbI/QLIH6qGKqAxp+wnp+dEHSIOsUmfSMD\nOxLeXDqWn/N0eyCqjiFpzVOEvQKBgQDbhiyc8d9kASrcExygSxZz6iPcFT+39jZ2\nJNmEqT1gEwDIZykiZGHea0Qb1Q1sToCcF6GC0kU97sePkCfFCzPWiFRKFduFHXXx\n3mMa0Fh9DYyo2usChrlVtd7B+79asEkTl7yoT6UBgt1idp/FwyDJaLQYRrBnwnRl\nMScLIlp/6wKBgQCu72w2s/MCjxSGF1lnjCKINqs9Hd3LL9AfTqcG4CAgOZNQULeO\ncSRhuX8AprGHOzDIxnT0c5NbhageqhRqj+Nanflck268YMAjH9ly1wiAsTsIbJY+\nme0ao7s2AQJw6yCReTAccN+2+L+98upea9jLUvMsJLOghzAARCbCuQdrRQKBgEb8\nNCDr9ZiY6AsSAweyQChrZf0cweXyr9m0QMItF7OhcXdcJGkCnMMXXIbDdfu3xs6y\ntX9gDxPfypgZvUJyROjyXI84UivRQvpbNyDMjlChuQJBCA1hEz0r+kQv68ifiIHV\nZyPl3S2H656TTUbduhRmzxWqhhCHSKwQINfw2+LRAoGAHspaO74pIzd6OJk5FSsp\n4EimZoJGk6xP/YDt4u9h29XTU00EqkaYy9nTdtnlBouO5++CQVxV6l8Ff12oaPyK\nxsMiqE4mkicQpEN4Pzis41Klh8m15FDKA6HBa3hPUao8ZVQR+6+AEsqzD/QHvJvj\nECSaUvTk2g7NJx+W7K0MN+g=\n-----END PRIVATE KEY-----\n",
+  "client_email": "kenshin@polar-avenue-427505-c6.iam.gserviceaccount.com",
+  "client_id": "117714472467345994298",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/kenshin%40polar-avenue-427505-c6.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

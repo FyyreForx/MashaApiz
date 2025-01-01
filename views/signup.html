@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .auth-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <h2>Register</h2>
+        <p>Attempting to register with phone number <span id="phone-number"></span></p>
+        <button id="proceedButton">Proceed</button>
+        <p id="error-message"></p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const phone = localStorage.getItem('phone');
+            if (phone) {
+                document.getElementById('phone-number').innerText = phone;
+                document.getElementById('proceedButton').addEventListener('click', function () {
+                    fetch(`https://apisku-furina.vercel.app/users/register/id=${phone}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status) {
+                                localStorage.setItem('apiKey', data.data.apikey);
+                                localStorage.setItem('isPremium', data.data.premium);
+                                window.location.href = '/Playground';
+                            } else {
+                                document.getElementById('error-message').innerText = 'Registration failed. Please try again.';
+                            }
+                        })
+                        .catch(error => {
+                            document.getElementById('error-message').innerText = 'Error occurred. Please try again later.';
+                        });
+                });
+            } else {
+                window.location.href = '/'; // Redirect to the main page if phone is not set
+            }
+        };
+    </script>
+
+</body>
+</html>

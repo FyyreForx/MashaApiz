@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .auth-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 15px;
+        }
+
+        .small-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .small-text:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <h2>Login</h2>
+        <p>Attempting to log in with phone number <span id="phone-number"></span></p>
+        <button id="proceedButton">Proceed</button>
+        <p id="error-message"></p>
+        <p class="small-text" id="registerPrompt">Don't have an account? Register here</p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const phone = localStorage.getItem('phone');
+            if (phone) {
+                document.getElementById('phone-number').innerText = phone;
+                document.getElementById('proceedButton').addEventListener('click', function () {
+                    fetch(`https://apisku-furina.vercel.app/users/steal?id=${phone}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status && data.data.msg !== 'Pengguna tidak di temukan') {
+                                localStorage.setItem('apiKey', data.data.apikey);
+                                localStorage.setItem('isPremium', data.data.premium);
+                                window.location.href = '/Playground';
+                            } else {
+                                document.getElementById('error-message').innerText = 'User not found. Please register.';
+                            }
+                        })
+                        .catch(error => {
+                            document.getElementById('error-message').innerText = 'Error occurred. Please try again later.';
+                        });
+                });
+
+                document.getElementById('registerPrompt').addEventListener('click', function () {
+                    window.location.href = '/signup'; // Redirect to the registration page
+                });
+            } else {
+                window.location.href = '/'; // Redirect to the main page if phone is not set
+            }
+        };
+    </script>
+
+</body>
+</html>
